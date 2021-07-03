@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
@@ -29,5 +31,40 @@ class AuthController extends Controller
 		}
 
 		return $response;
+	}
+
+
+	public function register(Request $request){
+
+
+		$request->validate([
+			'fname' => 'required|string|max:255',
+			'lname' => 'required|string|max:255',
+			'email' => 'required|string|email|max:255|unique:users',
+			'password' => 'required|string|min:6',
+		]);
+
+		return User::create([
+				'fname' => $request->fname,
+				'lname' => $request->lname,
+				'email' => $request->email,
+				'password' => Hash::make($request->password),
+		]);
+
+				
+	}
+
+
+
+	public function logout(){
+
+
+		auth()->user()->tokens->each(function ($token, $key){
+				$token->delete();
+		});
+
+		return response()->json('Logged out successfully', 200);
+
+
 	}
 }
